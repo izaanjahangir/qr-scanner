@@ -9,6 +9,9 @@
   --border: #d1d5db;
   --accent: #4f46e5;
   --error: #dc2626;
+  --success: #166534;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,6 +23,9 @@
     --border: #374151;
     --accent: #818cf8;
     --error: #f87171;
+    --success: #86efac;
+    --success-bg: rgba(34, 197, 94, 0.1);
+    --success-border: rgba(34, 197, 94, 0.3);
   }
 }
 
