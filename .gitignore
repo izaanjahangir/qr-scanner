@@ -25,3 +25,7 @@ dist-ssr
 
 # Claude Code local config
 .claude
+
+# Firebase
+.firebase
+firebase-debug.log*
