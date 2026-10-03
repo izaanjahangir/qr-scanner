@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import jsQR from 'jsqr'
+import CameraScanner from './CameraScanner'
 
 function decodeImage(file: File): Promise<string | null> {
   return new Promise((resolve, reject) => {
@@ -62,15 +63,23 @@ export default function QRReader() {
   const [result, setResult] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [scanning, setScanning] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const reset = () => {
     setResult(null)
     setError(null)
     setCopied(false)
     if (preview) URL.revokeObjectURL(preview)
-    setPreview(file ? URL.createObjectURL(file) : null)
+    setPreview(null)
+  }
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    reset()
+    setScanning(false)
     if (!file) return
+    setPreview(URL.createObjectURL(file))
 
     try {
       const value = await decodeImage(file)
@@ -79,6 +88,26 @@ export default function QRReader() {
     } catch (err) {
       setError((err as Error).message)
     }
+  }
+
+  const toggleCamera = () => {
+    if (scanning) {
+      setScanning(false)
+      return
+    }
+    reset()
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    setScanning(true)
+  }
+
+  const handleScanResult = (value: string) => {
+    setResult(value)
+    setScanning(false)
+  }
+
+  const handleScanError = (message: string) => {
+    setError(message)
+    setScanning(false)
   }
 
   const copy = async () => {
@@ -99,7 +128,11 @@ export default function QRReader() {
   return (
     <section className="card">
       <h2>Read QR Code</h2>
-      <input type="file" accept="image/*" onChange={handleFile} />
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFile} />
+      <button className="secondary" onClick={toggleCamera}>
+        {scanning ? 'Stop camera' : 'Scan with camera'}
+      </button>
+      {scanning && <CameraScanner onResult={handleScanResult} onError={handleScanError} />}
       {preview && <img className="preview" src={preview} alt="Uploaded QR" />}
       {error && <p className="error">{error}</p>}
       {result !== null && (
